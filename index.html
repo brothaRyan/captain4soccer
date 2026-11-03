@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -128,6 +129,9 @@ td small{margin-left:4px;font-size:11px;font-weight:400;color:var(--muted)}
 .nav{gap:2px;padding-left:4px;padding-right:4px}
 .nav button{font-size:13px}
 .lnk{background:none;border:0;padding:6px 0;text-align:left;min-height:44px;color:var(--ink);cursor:pointer}
+.ib{border-color:var(--turf)}
+.ibb{display:flex;gap:8px}.ibb .btn{margin:0}
+.qr{display:block;width:200px;height:200px;margin:8px auto;border-radius:8px}
 .sbc{display:block;margin-top:2px;padding:2px 4px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;line-height:1.3;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -215,9 +219,23 @@ function switchDate(d){if(!d||d===S.date)return;
  if(hasContent())saveMatch();
  if(S.hist.some(function(r){return r.date===d})){loadRec(d);toast('저장된 기록을 불러왔어요')}
  else{S.date=d;S.att={};S.guests=[];S.sc=[];S.opp='';S.cq=0;S.q.forEach(function(q){q.s=q.s.map(function(){return null});q.sub={}});toast('새 경기를 시작했어요')}}
+function dismissed(){if(UI.hd)return true;try{return localStorage.getItem('captain-hint')==='1'}catch(e){return false}}
+function isIos(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
+function isStandalone(){return navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
+function isPwa(){return !!document.querySelector('link[rel="manifest"]')}
+function installBanner(){if(!isPwa()||dismissed()||isStandalone())return '';
+ if(UI.ip)return '<section class="card ib"><b>앱으로 설치할 수 있어요</b><p class="note">홈 화면에 아이콘을 추가하면 앱처럼 바로 열려요.</p><div class="ibb"><button class="btn" data-act="inst">설치하기</button><button class="btn ghost" data-act="hint">닫기</button></div></section>';
+ if(isIos())return '<section class="card ib"><b>홈 화면에 추가하기</b><p class="note">Safari의 공유 버튼(네모에 위쪽 화살표)을 누르고 "홈 화면에 추가"를 선택하세요.</p><button class="btn ghost" data-act="hint">닫기</button></section>';
+ return ''}
+function appUrl(){return location.origin+location.pathname.replace(/index\.html$/,'')}
+function qrSvg(t){try{var q=qrcode(0,'M');q.addData(t);q.make();var n=q.getModuleCount(),d='';for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))d+='M'+(c+4)+' '+(r+4)+'h1v1h-1z';var s=n+8;return '<svg class="qr" viewBox="0 0 '+s+' '+s+'" role="img" aria-label="앱 주소 QR코드" shape-rendering="crispEdges"><rect width="'+s+'" height="'+s+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>'}catch(e){return ''}}
+function shareCard(){if(!isPwa())return '';var u=appUrl(),qs=window.qrcode?qrSvg(u):'';
+ return '<section class="card"><b>팀원에게 앱 공유</b><p class="note">팀원이 카메라로 QR코드를 비추거나 주소로 접속한 뒤 홈 화면에 추가하면 설치돼요.</p>'+(qs||'<p class="note w">QR코드는 인터넷에 연결되어 있을 때 나타나요.</p>')+'<p class="note" style="word-break:break-all;text-align:center">'+esc(u)+'</p><button class="btn" data-act="shareurl">주소 공유하기</button><button class="btn ghost" data-act="copyurl">주소 복사하기</button></section>'}
+function bkInfo(){var t=S.lastBk;if(!t)return '<p class="note w">아직 백업한 적이 없어요.</p>';
+ var old=Date.now()-t>7*864e5;return '<p class="note'+(old?' w':'')+'">마지막 백업: '+new Date(t).toLocaleString('ko-KR',{month:'long',day:'numeric',hour:'numeric',minute:'2-digit'})+(old?' (7일이 넘었어요)':'')+'</p>'}
 function viewSt(){var kb=Math.max(1,Math.round(JSON.stringify(S).length/1024));
- var h='<section class="card"><b>데이터 백업</b><p class="note">선수 '+S.members.length+'명, 저장된 경기 '+S.hist.length+'건, 약 '+kb+'KB. 데이터는 이 기기의 브라우저에만 저장돼서, 기기를 바꾸거나 브라우저 데이터를 지우면 사라져요. 백업 코드를 메모나 메신저에 보관해 두세요.</p><button class="btn" data-act="exp">백업 코드 복사하기</button></section>';
- h+='<section class="card"><b>백업 가져오기</b><p class="note">복사해 둔 백업 코드를 붙여넣으세요. 지금 데이터는 모두 바뀌어요.</p><textarea id="impTxt" class="in ta" placeholder="백업 코드 붙여넣기" aria-label="백업 코드">'+esc(UI.imp||'')+'</textarea><button class="btn" data-act="imp" style="margin-top:10px">'+(UI.armed==='imp'?'현재 데이터를 모두 바꿔요. 한 번 더 누르세요':'가져오기')+'</button></section>';
+ var h=shareCard();h+='<section class="card"><b>데이터 백업</b><p class="note">선수 '+S.members.length+'명, 저장된 경기 '+S.hist.length+'건, 약 '+kb+'KB. 데이터는 이 기기의 브라우저에만 저장돼서, 기기를 바꾸거나 브라우저 데이터를 지우면 사라져요. 백업 코드를 메모나 메신저에 보관해 두세요.</p>'+bkInfo()+'<button class="btn" data-act="bkfile">파일로 저장 (iCloud 드라이브에 보관)</button><button class="btn ghost" data-act="exp">백업 코드 복사하기</button><p class="note" style="margin:0">파일 저장을 누르면 나오는 목록에서 "파일에 저장"을 고른 뒤 iCloud Drive 폴더를 선택하세요.</p></section>';
+ h+='<section class="card"><b>백업 가져오기</b><p class="note">백업 파일을 고르거나 복사해 둔 백업 코드를 붙여넣으세요. 지금 데이터는 모두 바뀌어요.</p><label class="btn ghost" style="display:flex;align-items:center;justify-content:center;cursor:pointer">백업 파일 선택<input id="impFile" type="file" accept=".json,application/json,text/plain" data-chg="impfile" hidden></label><textarea id="impTxt" class="in ta" placeholder="백업 코드 붙여넣기" aria-label="백업 코드">'+esc(UI.imp||'')+'</textarea><button class="btn" data-act="imp" style="margin-top:10px">'+(UI.armed==='imp'?'현재 데이터를 모두 바꿔요. 한 번 더 누르세요':'가져오기')+'</button></section>';
  h+='<section class="card"><b>데이터 초기화</b><p class="note">선수, 기록, 현재 경기를 모두 지워요. 먼저 백업해 두세요.</p><button class="btn ghost" data-act="wipe" style="color:var(--no)">'+(UI.armed==='wipe'?'정말 모두 지울까요? 한 번 더 누르세요':'모든 데이터 지우기')+'</button></section>';
  return h}
 function recMins(r){var m={};r.q.forEach(function(q){qids(q).forEach(function(id){var f=qinfo(q,id,r.qmin);if(f)m[id]=(m[id]||0)+f.m})});return m}
@@ -302,6 +320,7 @@ function sheet(){
 
 function render(){fixQ();
  var h='<input class="team" value="'+esc(S.team)+'" maxlength="20" data-chg="team" aria-label="팀 이름"><div class="sub"><span>'+esc(fmtDate(S.date))+' 경기</span><button class="sm" data-act="savematch">'+(UI.armed==='save'?'같은 날짜 기록을 덮어써요. 한 번 더':'이 경기 저장')+'</button></div>';
+ h+=installBanner();
  h+=S.tab==='att'?viewAtt():S.tab==='fm'?viewFm():S.tab==='hs'?viewHs():S.tab==='pl'?viewPl():S.tab==='cf'?viewSt():viewTm();
  document.getElementById('app').innerHTML=h+sheet();
  document.querySelectorAll('.nav button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.tab)})}
@@ -344,7 +363,15 @@ document.addEventListener('click',function(e){
  else if(a==='close'){UI.pick=null;UI.text=null;render();return}
  else if(a==='hv'){UI.hv=t.dataset.v}
  else if(a==='pf'){UI.pf=t.dataset.v}
- else if(a==='exp'){var etx=JSON.stringify({app:'captain-notes',v:1,data:S});copyText(etx).then(function(ok){if(ok)toast('백업 코드를 복사했어요');else{UI.text=etx;render()}});return}
+ else if(a==='inst'){var iv=UI.ip;UI.ip=null;if(iv)iv.prompt()}
+ else if(a==='hint'){UI.hd=1;try{localStorage.setItem('captain-hint','1')}catch(err){}}
+ else if(a==='shareurl'){var su=appUrl();if(navigator.share){navigator.share({title:'축구팀 주장 수첩',text:'축구팀 주장 수첩 앱 주소예요. 열어서 홈 화면에 추가해 주세요.',url:su}).catch(function(){})}else{copyText(su).then(function(ok){toast(ok?'주소를 복사했어요':'주소를 길게 눌러 복사해 주세요')})}return}
+ else if(a==='copyurl'){copyText(appUrl()).then(function(ok){toast(ok?'주소를 복사했어요':'주소를 길게 눌러 복사해 주세요')});return}
+ else if(a==='bkfile'){var js=JSON.stringify({app:'captain-notes',v:1,data:S}),fn='captain-backup-'+today()+'.json';
+  try{var fl=new File([js],fn,{type:'application/json'});
+   if(navigator.canShare&&navigator.canShare({files:[fl]})){navigator.share({files:[fl],title:'주장 수첩 백업'}).then(function(){S.lastBk=Date.now();save();toast('백업을 저장했어요');render()}).catch(function(){});return}
+   var bl=new Blob([js],{type:'application/json'}),bu=URL.createObjectURL(bl),an=document.createElement('a');an.href=bu;an.download=fn;document.body.appendChild(an);an.click();an.remove();setTimeout(function(){URL.revokeObjectURL(bu)},4000);S.lastBk=Date.now();toast('백업 파일을 저장했어요')}catch(err){UI.text=js;render();return}}
+ else if(a==='exp'){var etx=JSON.stringify({app:'captain-notes',v:1,data:S});copyText(etx).then(function(ok){if(ok){S.lastBk=Date.now();save();toast('백업 코드를 복사했어요');render()}else{UI.text=etx;render()}});return}
  else if(a==='imp'){var ra=(document.getElementById('impTxt')||{}).value||UI.imp||'',dd=null;try{var oo=JSON.parse(ra.trim());if(oo&&oo.app==='captain-notes')dd=oo.data}catch(err){}if(!dd||!Array.isArray(dd.members)||!Array.isArray(dd.hist)){toast('백업 코드를 확인해 주세요');return}if(!twice('imp')){render();return}UI.armed=null;S=Object.assign(fresh(),dd);S.tab='cf';UI.imp='';UI.pick=null;toast('백업을 가져왔어요')}
  else if(a==='wipe'){if(!twice('wipe')){render();return}UI.armed=null;S=fresh();S.tab='cf';UI.imp='';toast('모든 데이터를 지웠어요')}
  else if(a==='actv'){var am=S.members.find(function(x){return x.id===id});if(!am)return;if(t.dataset.v==='off'){am.act=false;am.why=am.why||'부상';delete S.att[id];dropFromLineups(id);toast('현재 경기 출석과 배치에서 뺐어요')}else{am.act=true}}
@@ -370,10 +397,13 @@ document.addEventListener('change',function(e){var t=e.target,c=t.dataset.chg;if
  else if(c==='qmin')S.qmin=Math.max(5,Math.min(45,+t.value||20));
  else if(c==='sort')S.sort=t.value;
  else if(c==='opp')S.opp=t.value.trim();
+ else if(c==='impfile'){var f0=t.files&&t.files[0];if(!f0)return;var fr=new FileReader();fr.onload=function(){UI.imp=String(fr.result||'');render();toast('파일을 읽었어요. 가져오기를 눌러 주세요')};fr.readAsText(f0);return}
  else if(c==='no'){var nmm=S.members.find(function(x){return x.id===t.dataset.id});if(nmm)nmm.no=cno(t.value)}
  else if(c==='why'){var wm=S.members.find(function(x){return x.id===t.dataset.id});if(wm)wm.why=t.value}
  save();render()});
 document.addEventListener('keydown',function(e){var idm=e.target.id;if((idm==='newName'||idm==='gName'||idm==='gName2')&&e.key==='Enter'){e.preventDefault();var b=document.querySelector('[data-in="'+idm+'"]')||document.querySelector('[data-act="add"]');if(b)b.click()}});
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();UI.ip=e;render()});
+window.addEventListener('appinstalled',function(){UI.ip=null;render()});
 document.addEventListener('input',function(e){if(e.target.id==='impTxt')UI.imp=e.target.value});
 document.addEventListener('toggle',function(e){if(e.target.matches&&e.target.matches('details[data-mg]'))UI.mg=e.target.open},true);
 render();
