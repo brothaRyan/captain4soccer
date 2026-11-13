@@ -220,7 +220,7 @@ function slotDefs(f){var L=FORMS[f],n=L.length,out=[{g:'GK',x:50,y:90}];
  L.forEach(function(c,i){var y=n>1?70-i*(56/(n-1)):40,g=i===0?'DF':(i===n-1?'FW':'MF');for(var j=0;j<c;j++)out.push({g:g,x:(j+1)/(c+1)*100,y:y})});return out}
 function fixQ(){S.qn=Math.max(2,Math.min(6,S.qn||4));
  while(S.q.length<S.qn)S.q.push({f:S.q.length?S.q[S.q.length-1].f:'4-3-3',s:[]});S.q.length=S.qn;
- S.q.forEach(function(q){if(!FORMS[q.f])q.f='4-3-3';if(!S.v2&&q.f==='4-4-2'&&!q.s.some(Boolean))q.f='4-3-3';var n=slotDefs(q.f).length;q.s=q.s.slice(0,n);while(q.s.length<n)q.s.push(null);q.sub=q.sub||{};Object.keys(q.sub).forEach(function(i){if(!q.s[i]||!q.sub[i])delete q.sub[i]})});S.v2=1;if(!S.v3){S.sort='name';S.v3=1}
+ S.q.forEach(function(q){if(!FORMS[q.f])q.f='4-3-3';if(!S.v2&&q.f==='4-4-2'&&!q.s.some(Boolean))q.f='4-3-3';var n=slotDefs(q.f).length;q.s=q.s.slice(0,n);while(q.s.length<n)q.s.push(null);q.sub=q.sub||{};Object.keys(q.sub).forEach(function(i){if(!q.s[i]||!q.sub[i])delete q.sub[i]})});S.v2=1;if(!S.v3){S.sort='name';S.v3=1}if(S.sort==='add'||S.sort==='pos')S.sort='name';
  S.sc=S.sc||[];while(S.sc.length<S.qn)S.sc.push({a:0,b:0});S.sc.length=S.qn;if(S.cq>=S.qn)S.cq=0}
 function attendees(){return S.members.filter(function(m){return S.att[m.id]==='y'})}
 function nameOf(id){var m=S.members.concat(S.guests).find(function(x){return x.id===id});return m?m.name:''}
@@ -252,7 +252,7 @@ function anyFilled(){return S.q.some(function(q){return q.s.some(Boolean)})}
 function dropFromLineups(id){S.q.forEach(function(q){q.sub=q.sub||{};q.s=q.s.map(function(x,i){if(x===id)delete q.sub[i];return x===id?null:x});Object.keys(q.sub).forEach(function(i){if(q.sub[i].id===id)delete q.sub[i]})})}
 function cno(v){var n=parseInt(v,10);return isNaN(n)?'':String(Math.max(0,Math.min(99,n)))}
 function tag(m){if(m.guest)return '<small>게스트</small>';var p=[];if(m.no)p.push('#'+esc(m.no));if(m.pos!=='ANY')p.push(m.pos);return p.length?'<small>'+p.join(' ')+'</small>':''}
-var SORTS=[['name','이름순'],['no','등번호순'],['add','등록순'],['pos','포지션순'],['att','참석 상태순'],['min','누적 출전시간순']],PO={GK:0,DF:1,MF:2,FW:3,ANY:4},AO={y:0,m:1,n:2};
+var SORTS=[['name','이름순'],['no','등번호순'],['att','참석률순'],['min','누적 출전시간순']];
 function sortSel(){return '<div class="sort"><span>명단 정렬</span><select data-chg="sort" aria-label="명단 정렬">'+SORTS.map(function(s){return '<option value="'+s[0]+'"'+(S.sort===s[0]?' selected':'')+'>'+s[1]+'</option>'}).join('')+'</select></div>'}
 function byName(a,b){return a.name.localeCompare(b.name,'ko')}
 function blank(n){return {y:0,n:0,min:0,GK:0,DF:0,MF:0,FW:0,name:n}}
@@ -261,11 +261,11 @@ function totals(){var T={};
   Object.keys(r.att).forEach(function(id){var t=T[id]=T[id]||blank(r.names[id]);if(r.att[id]==='y')t.y++;else if(r.att[id]==='n')t.n++});
   r.q.forEach(function(q){qids(q).forEach(function(id){if(!r.names[id])return;var f=qinfo(q,id,r.qmin);if(!f)return;var t=T[id]=T[id]||blank(r.names[id]);t[f.g]++;t.min+=f.m})})});
  return T}
-function sorted(list){var l=list.slice(),T=S.sort==='min'?totals():null;
+function attendanceRate(t){return t&&t.y+t.n?t.y/(t.y+t.n):0}
+function sorted(list){var l=list.slice(),T=S.sort==='min'||S.sort==='att'?totals():null;
  if(S.sort==='name')l.sort(byName);
  else if(S.sort==='no')l.sort(function(a,b){return (+a.no||999)-(+b.no||999)||byName(a,b)});
- else if(S.sort==='pos')l.sort(function(a,b){return PO[a.pos]-PO[b.pos]||byName(a,b)});
- else if(S.sort==='att')l.sort(function(a,b){return AO[S.att[a.id]||'m']-AO[S.att[b.id]||'m']||byName(a,b)});
+ else if(S.sort==='att')l.sort(function(a,b){return attendanceRate(T[b.id])-attendanceRate(T[a.id])||byName(a,b)});
  else if(S.sort==='min')l.sort(function(a,b){return (T[b.id]?T[b.id].min:0)-(T[a.id]?T[a.id].min:0)||byName(a,b)});
  return l}
 function saveMatch(){var names={},att={};S.members.forEach(function(m){names[m.id]=m.name;if(S.att[m.id])att[m.id]=S.att[m.id]});
@@ -333,9 +333,9 @@ function viewDates(){
 function viewAll(){
  if(!S.hist.length)return '<section class="card empty"><p>저장된 경기가 없어요. 경기 날짜를 바꾸면 여기에 누적 기록이 쌓여요.</p></section>';
  var T=totals(),list=sorted(Object.keys(T).map(function(id){var m=S.members.find(function(x){return x.id===id});return {id:id,name:m?m.name:T[id].name,pos:m?m.pos:'ANY',why:m&&!isAct(m)?(m.why||'Inactive'):'',no:m?m.no:''}}));
- var h=sortSel()+'<div class="tw"><table><thead><tr><th>이름</th><th>참석</th><th>불참</th><th>출전분</th><th>평균</th><th>GK</th><th>DF</th><th>MF</th><th>FW</th></tr></thead><tbody>';
- list.forEach(function(p){var t=T[p.id];h+='<tr><td>'+esc(p.name)+(p.why?'<small>'+esc(p.why)+'</small>':'')+'</td><td>'+t.y+'</td><td>'+t.n+'</td><td>'+t.min+'</td><td>'+(t.y?Math.round(t.min/t.y):'-')+'</td><td>'+t.GK+'</td><td>'+t.DF+'</td><td>'+t.MF+'</td><td>'+t.FW+'</td></tr>'});
- var w=0,dr=0,l=0,gf=0,ga=0;S.hist.forEach(function(r){if(!r.sc)return;var s=sumSc(r.sc);gf+=s.a;ga+=s.b;if(s.a>s.b)w++;else if(s.a<s.b)l++;else dr++});return h+'</tbody></table></div><p class="note">전적 '+w+'승 '+dr+'무 '+l+'패, 득점 '+gf+' 실점 '+ga+'</p><p class="note">총 '+S.hist.length+'경기 기록. 출전분은 누적 분, 평균은 참석한 경기당 분, 포지션 열은 출전 쿼터 수예요.</p>'}
+ var h=sortSel()+'<div class="tw"><table><thead><tr><th>이름</th><th>등번호</th><th>참석</th><th>불참</th><th>출석률</th><th>출전분</th><th>평균</th></tr></thead><tbody>';
+ list.forEach(function(p){var t=T[p.id],rate=t.y+t.n?Math.round(t.y/(t.y+t.n)*100)+'%':'-';h+='<tr><td>'+esc(p.name)+(p.why?'<small>'+esc(p.why)+'</small>':'')+'</td><td>'+(p.no?'#'+esc(p.no):'-')+'</td><td>'+t.y+'</td><td>'+t.n+'</td><td>'+rate+'</td><td>'+t.min+'</td><td>'+(t.y?Math.round(t.min/t.y):'-')+'</td></tr>'});
+ var w=0,dr=0,l=0,gf=0,ga=0;S.hist.forEach(function(r){if(!r.sc)return;var s=sumSc(r.sc);gf+=s.a;ga+=s.b;if(s.a>s.b)w++;else if(s.a<s.b)l++;else dr++});return h+'</tbody></table></div><p class="note">전적 '+w+'승 '+dr+'무 '+l+'패, 득점 '+gf+' 실점 '+ga+'</p><p class="note">총 '+S.hist.length+'경기 기록. 출전분은 누적 분, 평균은 참석한 경기당 분이에요.</p>'}
 function viewHs(){var v=UI.hv||'d';
  return '<div class="qt"><button class="'+(v==='d'?'on':'')+'" data-act="hv" data-v="d">날짜별 기록</button><button class="'+(v==='all'?'on':'')+'" data-act="hv" data-v="all">통합 기록</button></div>'+(v==='d'?viewDates():viewAll())}
 function twice(k){if(UI.armed===k){UI.armed=null;return true}UI.armed=k;clearTimeout(UI.t);UI.t=setTimeout(function(){UI.armed=null;render()},3000);return false}
@@ -344,13 +344,13 @@ function isAct(m){return m.act!==false}
 var POSL=['ANY','GK','DF','MF','FW'];
 function posOpts(sel){return POSL.map(function(p){return '<option value="'+p+'"'+(sel===p?' selected':'')+'>'+(p==='ANY'?'무관':p)+'</option>'}).join('')}
 
-function viewAtt(){var ms=sorted(S.members.filter(isAct)),c={y:0,n:0,m:0},off=S.members.length-ms.length;
- ms.forEach(function(m){var v=S.att[m.id];c[v==='y'?'y':v==='n'?'n':'m']++});
- var h='<section class="card"><div class="stats"><div><b>'+c.y+'</b>참석</div><div><b>'+c.n+'</b>불참</div><div><b>'+c.m+'</b>미정</div></div></section>';
+function viewAtt(){var ms=sorted(S.members.filter(isAct)),c={y:0,n:0},off=S.members.length-ms.length;
+ ms.forEach(function(m){var v=S.att[m.id];if(v==='y')c.y++;else if(v==='n')c.n++});
+ var h='<section class="card"><div class="stats"><div><b>'+c.y+'</b>참석</div><div><b>'+c.n+'</b>불참</div></div></section>';
  if(ms.length>1)h+=sortSel();
  if(!ms.length)h+='<section class="card empty"><p>Active 선수가 없어요. 선수 탭에서 선수를 추가하거나 Active로 바꿔 주세요.</p><button class="btn" data-tab="pl">선수 탭으로 이동</button></section>';
  else h+='<section class="list">'+ms.map(function(m){var v=S.att[m.id]||'m';
-  return '<div class="row"><div class="nm">'+esc(m.name)+tag(m)+'</div><div class="seg">'+[['y','참석'],['n','불참'],['m','미정']].map(function(a){return '<button class="'+a[0]+(v===a[0]?' on':'')+'" data-act="att" data-id="'+m.id+'" data-v="'+a[0]+'">'+a[1]+'</button>'}).join('')+'</div></div>'}).join('')+'</section>';
+  return '<div class="row"><div class="nm">'+esc(m.name)+tag(m)+'</div><div class="seg">'+[['y','참석'],['n','불참']].map(function(a){return '<button class="'+a[0]+(v===a[0]?' on':'')+'" data-act="att" data-id="'+m.id+'" data-v="'+a[0]+'">'+a[1]+'</button>'}).join('')+'</div></div>'}).join('')+'</section>';
  if(off)h+='<p class="note">Inactive 선수 '+off+'명은 출석 목록에 나오지 않아요.</p>';
  h+='<section class="card"><b>게스트</b><div class="add"><input id="gName" class="in" maxlength="10" placeholder="게스트 이름" aria-label="게스트 이름"><button class="btn" data-act="addguest" data-in="gName">추가</button></div>'+S.guests.map(function(g){return '<div class="mrow"><div class="nm">'+esc(g.name)+'<small>게스트</small></div><button class="x" data-act="delguest" data-id="'+g.id+'">'+(UI.armed==='dg'+g.id?'삭제할까요?':'삭제')+'</button></div>'}).join('')+(S.guests.length?'':'<p class="note" style="margin:0">포메이션 탭의 자리 선택에서도 바로 추가할 수 있어요.</p>')+'</section>';
  return h}
@@ -380,7 +380,7 @@ function viewTm(){var at=sorted(attendees().concat(S.guests.filter(function(g){r
  var h='<section class="card cfg"><label>쿼터 수<select class="in" data-chg="qn">'+[2,3,4,5,6].map(function(n){return '<option'+(n===S.qn?' selected':'')+'>'+n+'</option>'}).join('')+'</select></label><label>쿼터당 분<input class="in" type="number" min="5" max="45" step="5" value="'+S.qmin+'" data-chg="qmin"></label></section>';
  h+='<section class="card"><b>참석자 선택</b><p class="note">선택한 참석자를 기준으로 모든 쿼터를 자동 배치해요.</p>';
  if(ms.length)h+='<div class="list">'+ms.map(function(m){var v=S.att[m.id]||'m';
-  return '<div class="row"><div class="nm">'+esc(m.name)+tag(m)+'</div><div class="seg">'+[['y','참석'],['n','불참'],['m','미정']].map(function(a){return '<button class="'+a[0]+(v===a[0]?' on':'')+'" data-act="att" data-id="'+m.id+'" data-v="'+a[0]+'">'+a[1]+'</button>'}).join('')+'</div></div>'}).join('')+'</div>';
+  return '<div class="row"><div class="nm">'+esc(m.name)+tag(m)+'</div><div class="seg">'+[['y','참석'],['n','불참']].map(function(a){return '<button class="'+a[0]+(v===a[0]?' on':'')+'" data-act="att" data-id="'+m.id+'" data-v="'+a[0]+'">'+a[1]+'</button>'}).join('')+'</div></div>'}).join('')+'</div>';
  else h+='<p class="note w">선수가 없어요. 선수 탭에서 먼저 선수를 추가해 주세요.</p>';
  h+='<button class="btn" data-act="auto">'+(UI.armed==='auto'?'현재 배치를 덮어써요. 한 번 더 누르세요':'참석자로 자동 배치')+'</button></section>';
  if(!at.length)return h+'<p class="note w">참석자를 선택한 뒤 자동 배치할 수 있어요.</p>';
