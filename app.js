@@ -481,7 +481,7 @@ document.addEventListener('click',function(e){
  else if(a==='removeQuarter'){if(S.qn>1){requestConfirm('쿼터 삭제 확인','마지막 쿼터와 해당 기록을 삭제할까요? 이 작업은 되돌릴 수 없습니다.','삭제',function(){S.q.pop();S.sc.pop();S.qn--;if(S.cq>=S.qn)S.cq=S.qn-1});return}}
  else if(a==='slot'){UI.pick=+t.dataset.i;UI.pm=S.q[S.cq].s[UI.pick]?'sb':'st';render();return}
  else if(a==='assign'){var q=S.q[S.cq],i=UI.pick,prev=q.s[i],j=q.s.indexOf(id);q.sub=q.sub||{};delete q.sub[i];Object.keys(q.sub).forEach(function(k){if(q.sub[k].id===id)delete q.sub[k]});if(j>=0){q.s[j]=prev||null;delete q.sub[j]}q.s[i]=id;UI.pick=null}
- else if(a==='clear'){var clearIndex=UI.pick,clearName=nameOf(S.q[S.cq].s[clearIndex]);requestConfirm('자리 비우기 확인','{name} 선수를 이 자리에서 제외할까요?','비우기',function(){S.q[S.cq].s[clearIndex]=null;delete S.q[S.cq].sub[clearIndex];UI.pick=null},{name:clearName});return}
+ else if(a==='clear'){var clearIndex=UI.pick,clearQuarter=S.q[S.cq];if(clearIndex!=null){clearQuarter.s[clearIndex]=null;clearQuarter.sub=clearQuarter.sub||{};delete clearQuarter.sub[clearIndex]}UI.pick=null}
  else if(a==='close'){UI.pick=null;UI.text=null;render();return}
  else if(a==='tmv'){UI.tmView=t.dataset.v}
  else if(a==='pf'){UI.pf=t.dataset.v}
