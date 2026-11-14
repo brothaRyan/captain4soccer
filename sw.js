@@ -1,6 +1,6 @@
-// 앱을 수정해서 다시 올릴 때는 아래 버전 숫자를 올려 주세요. (예: captain-v2)
-const V = 'captain-v1';
-const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
+// 앱을 수정해서 다시 올릴 때는 아래 버전 숫자를 올려 주세요. (예: captain-v19)
+const V = 'captain-v19';
+const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'locales/ko.js', 'locales/en.js', 'locales/es.js', 'locales/pt.js', 'locales/de.js', 'locales/fr.js', 'locales/it.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
