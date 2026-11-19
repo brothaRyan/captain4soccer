@@ -305,8 +305,9 @@ td small{margin-left:4px;font-size:11px;font-weight:400;color:var(--muted)}
  #app.tab-fm>.pitch-layout{display:grid;grid-column:1/-1;grid-template-columns:minmax(0,3fr) minmax(0,1fr);gap:12px;align-items:start;min-width:0}
  #app.tab-fm .pitch-main{min-width:0}
  #app.tab-fm .pitch-panel{display:flex;flex-direction:column;gap:4px;align-items:stretch;min-width:0}
- #app.tab-fm .pitch-panel .pitch{align-self:center;width:min(100%,calc((100dvh - 254px)*1.5));aspect-ratio:3/2;margin:0}
- #app.tab-fm .pitch-panel .pitch-controls{display:flex;align-items:stretch;gap:6px;width:100%;min-width:0}
+ #app.tab-fm .pitch-panel .pitch{align-self:stretch;width:100%;aspect-ratio:3/2;margin:0}
+ #app.tab-fm .pitch-controls>.note.w{order:-1;flex:0 0 100%;width:100%;min-width:0;margin:0;font-size:clamp(9px,2.8vw,13px);white-space:nowrap}
+ #app.tab-fm .pitch-panel .pitch-controls{display:flex;align-items:stretch;gap:6px;width:100%;min-width:0;flex-wrap:wrap}
  #app.tab-fm .pitch-panel .pitch-copy{flex:0 0 35%;min-width:0;min-height:32px;margin:0;padding:4px 8px;font-size:12px;line-height:1.2}
  #app.tab-fm .pitch-panel .pitch-hint{flex:1;min-width:0;min-height:32px;margin:0;gap:5px}
  #app.tab-fm .pitch-panel .pitch-hint .note{flex:1;font-size:11px;line-height:1.25}
@@ -334,6 +335,55 @@ td small{margin-left:4px;font-size:11px;font-weight:400;color:var(--muted)}
  .date-wrap.header-placeholder{height:32px}
  .nav{gap:4px;padding:4px calc(8px + env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px))}
  .nav button{min-height:42px}
+}
+@media (orientation:landscape) and (min-width:700px){
+ #app.tab-fm>.pitch-layout{grid-template-columns:minmax(0,3fr) minmax(0,1fr)}
+ #app.tab-fm .pitch-main{min-width:0}
+ #app.tab-fm .pitch-panel{display:flex;flex-direction:column;gap:4px;align-items:stretch;min-width:0}
+ #app.tab-fm .pitch-panel .pitch{align-self:stretch;width:100%;aspect-ratio:3/2;margin:0}
+ #app.tab-fm .pitch-controls>.note.w{width:100%;margin:0;font-size:clamp(9px,2.8vw,13px);white-space:nowrap}
+ .pitch .hl{left:50%;right:auto;top:0;bottom:0;border-width:0 0 0 2px}
+ .pitch .bx{left:auto;right:auto;top:22%;bottom:22%;width:15%;height:auto}
+ .pitch .bx.t{left:0;right:auto;top:22%;bottom:22%;border:2px solid var(--pl);border-left:0}
+ .pitch .bx.b{left:auto;right:0;top:22%;bottom:22%;border:2px solid var(--pl);border-right:0}
+}
+@media (orientation:landscape){
+ #app.tab-fm>.pitch-layout{grid-template-columns:minmax(0,3fr) minmax(0,1fr);column-gap:12px}
+ #app.tab-fm .pitch-main,#app.tab-fm .pitch-panel{display:contents}
+ #app.tab-fm .pitch-controls{grid-column:1;grid-row:1;min-width:0}
+ #app.tab-fm .pitch-panel .pitch{grid-column:1;grid-row:2;min-width:0}
+ #app.tab-fm .bench{grid-column:1;grid-row:3;min-width:0}
+ #app.tab-fm .fm-side{grid-column:2;grid-row:2;align-self:start;min-width:0;margin:0}
+ #app.tab-fm .score-card{min-width:0;margin:0;padding:clamp(8px,1.4vw,14px)}
+ #app.tab-fm .score-card .scr{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:stretch}
+ #app.tab-fm .score-card .scr>div{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;text-align:center}
+ #app.tab-fm .score-card .lbl{min-width:0;margin:0;overflow-wrap:anywhere}
+ #app.tab-fm .score-card .step{gap:3px}
+ #app.tab-fm .score-card .step{justify-content:center}
+ #app.tab-fm .score-card .step button{flex:0 0 28px;width:28px;height:32px;padding:0;font-size:20px}
+ #app.tab-fm .score-card .step b{min-width:20px;font-size:22px}
+ #app.tab-fm .score-card .vs{display:none}
+ #app.tab-fm .score-card .fin{font-size:clamp(12px,1.8vw,20px);line-height:1.25;overflow-wrap:anywhere}
+ #app.tab-fm .score-card .note{font-size:clamp(10px,1.3vw,13px);line-height:1.4;overflow-wrap:anywhere}
+ #app.tab-fm .score-card .opp{width:100%;min-width:0;margin-top:8px}
+}
+body.pitch-fullscreen{overflow:hidden}
+body.pitch-fullscreen .wrap{width:100%;max-width:none;margin:0;padding:0}
+body.pitch-fullscreen .nav{display:none}
+body.pitch-fullscreen #app.tab-fm>.page-header,
+body.pitch-fullscreen #app.tab-fm>.quarter-nav,
+body.pitch-fullscreen #app.tab-fm>.bar,
+body.pitch-fullscreen #app.tab-fm .fm-side,
+body.pitch-fullscreen #app.tab-fm .bench{display:none}
+body.pitch-fullscreen #app.tab-fm>.pitch-layout{display:block;width:100%;margin:0}
+body.pitch-fullscreen #app.tab-fm .pitch-main{display:block}
+body.pitch-fullscreen #app.tab-fm .pitch-panel{position:fixed;inset:0;z-index:25;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-items:stretch;gap:8px;min-width:0;margin:0;padding:calc(8px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) calc(10px + env(safe-area-inset-left,0px));overflow:hidden;background:var(--bg)}
+body.pitch-fullscreen #app.tab-fm .pitch-controls{grid-column:1;grid-row:1;display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0}
+body.pitch-fullscreen #app.tab-fm .pitch-hint{flex:1;min-width:0;margin:0}
+body.pitch-fullscreen #app.tab-fm .pitch-hint>.note{display:none}
+body.pitch-fullscreen #app.tab-fm .pitch-panel .pitch{grid-column:1;grid-row:2;align-self:center;justify-self:center;width:min(100%,calc((100dvh - 100px)*5/6));height:auto;max-height:100%;aspect-ratio:5/6;margin:0}
+@media (orientation:landscape){
+ body.pitch-fullscreen #app.tab-fm .pitch-panel .pitch{width:min(100%,calc((100dvh - 100px)*1.5));aspect-ratio:3/2}
 }
 @media (min-width:1000px) and (orientation:landscape){
  body{display:grid;grid-template-columns:200px minmax(0,1fr);align-items:start;min-height:100vh}

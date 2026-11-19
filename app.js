@@ -1,6 +1,6 @@
 var FORMS={'4-4-2':[4,4,2],'4-3-3':[4,3,3],'4-2-3-1':[4,2,3,1],'3-5-2':[3,5,2],'3-4-3':[3,4,3],'5-3-2':[5,3,2],'3-3-2':[3,3,2],'3-3-1':[3,3,1],'2-3-2':[2,3,2],'2-3-1':[2,3,1],'2-2-1':[2,2,1]};
 var MAX_QUARTERS=20;
-var KEY='captain-notes-v1',UI={pick:null,text:null,mg:false,menu:false,matchDate:'',matchTime:'',dateMatches:null,dateTarget:'',calendarOpen:false,calendarMonth:'',matchCalendarOpen:false,matchCalendarMonth:'',statsCalendarField:'',statsCalendarMonth:'',calendarMode:'days',calendarPickerYear:0,teamEditOpen:false,confirm:null,dragSuppressUntil:0,playerEditor:null};
+var KEY='captain-notes-v1',UI={pick:null,text:null,mg:false,menu:false,matchDate:'',matchTime:'',dateMatches:null,dateTarget:'',calendarOpen:false,calendarMonth:'',matchCalendarOpen:false,matchCalendarMonth:'',statsCalendarField:'',statsCalendarMonth:'',calendarMode:'days',calendarPickerYear:0,teamEditOpen:false,confirm:null,dragSuppressUntil:0,playerEditor:null,pitchFullscreen:false};
 var peopleById=Object.create(null),guestIds=Object.create(null);
 var LANGS={ko:{name:'한국어',locale:'ko-KR'},en:{name:'English',locale:'en-US'},es:{name:'Español',locale:'es-ES'},pt:{name:'Português',locale:'pt-PT'},de:{name:'Deutsch',locale:'de-DE'},fr:{name:'Français',locale:'fr-FR'},it:{name:'Italiano',locale:'it-IT'}};
 var LANG_KEY='captain-notes-language',LANG='ko';
@@ -86,7 +86,7 @@ function setTeamImage(file){if(!file)return;
 function slotDefs(f){var L=FORMS[f],n=L.length,out=[{g:'GK',x:50,y:92}];
  out[0].rowSize=1;L.forEach(function(c,i){var progress=n>1?i/(n-1):.5,y=n>1?75-47*progress+(i&&i<n-1?2.5*Math.sin(Math.PI*progress):0):50,g=i===0?'DF':(i===n-1?'FW':'MF');for(var j=0;j<c;j++)out.push({g:g,x:(j+1)/(c+1)*100,y:y,rowSize:c})});return out}
 function opponentDefs(){return slotDefs('4-3-3').map(function(d,i){return {x:d.x,y:i===0?8:i<=4?18:i<=7?38:65}})}
-function pitchIsLandscape(){return window.matchMedia('(orientation: landscape) and (max-height: 520px) and (max-width: 999px)').matches}
+function pitchIsLandscape(){return window.matchMedia('(orientation: landscape) and (max-height: 520px) and (max-width: 999px), (orientation: landscape) and (min-width: 700px)').matches}
 function pitchDisplayCoords(x,y){return pitchIsLandscape()?{x:100-y,y:x}:{x:x,y:y}}
 function clampCoord(n){return Math.max(4,Math.min(96,+n||50))}
 function fixCoords(coords,count){coords=coords&&typeof coords==='object'?coords:{};Object.keys(coords).forEach(function(i){var c=coords[i];if(+i<0||+i>=count||!c||!isFinite(+c.x)||!isFinite(+c.y))delete coords[i];else coords[i]={x:clampCoord(c.x),y:clampCoord(c.y)}});return coords}
@@ -118,6 +118,7 @@ function sumSc(src){var a=0,b=0;(src||S.sc).forEach(function(s){a+=s.a;b+=s.b});
 function scTxt(r){var s=sumSc(r.sc);return (r.opp?tr('대진 접두사')+esc(r.opp)+' ':'')+s.a+' : '+s.b+' '+tr(s.a>s.b?'승':s.a<s.b?'패':'무')}
 function resultLabel(a,b){return tr(a>b?'승':a<b?'패':'무')}
 function scoreSummary(q,a,b){return tr('{quarter}쿼터 기준, 최종 {home} : {away} {result}',{quarter:q,home:a,away:b,result:resultLabel(a,b)})}
+function pitchFullscreenLabel(isOpen){var labels={ko:isOpen?'전체화면 종료':'전체화면',en:isOpen?'Exit fullscreen':'Fullscreen',es:isOpen?'Salir de pantalla completa':'Pantalla completa',pt:isOpen?'Sair do ecrã inteiro':'Ecrã inteiro',de:isOpen?'Vollbild beenden':'Vollbild',fr:isOpen?'Quitter le plein écran':'Plein écran',it:isOpen?'Esci da schermo intero':'Schermo intero'};return labels[LANG]||labels.ko}
 function quarterMinutes(q,fallback){return q&&q.duration!=null?Math.max(5,Math.min(45,+q.duration||fallback)):fallback}
 function scoreCard(){var s=S.sc[S.cq],f=sumSc();
  function st(k,l){var side=esc(l);return '<div><span class="lbl">'+l+'</span><div class="step"><button data-act="sc" data-k="'+k+'" data-d="-1" aria-label="'+tr('{side} 점수 {action}',{side:side,action:tr('점수 빼기')})+'">−</button><b>'+s[k]+'</b><button data-act="sc" data-k="'+k+'" data-d="1" aria-label="'+tr('{side} 점수 {action}',{side:side,action:tr('점수 더하기')})+'">+</button></div></div>'}
@@ -361,14 +362,28 @@ function render(){fixQ();indexPeople();
  var banner=installBanner();
  if(S.tab==='cf')h+=viewSt()+banner;
  else h+=banner+(S.tab==='att'?viewAtt():S.tab==='fm'?viewFm():S.tab==='hs'?viewHs():S.tab==='pl'?viewPl():viewTm());
- var app=document.getElementById('app');app.className='tab-'+S.tab;app.innerHTML=h+sheet();fitTeamName();
+ var app=document.getElementById('app');app.className='tab-'+S.tab;app.innerHTML=h+sheet();document.body.classList.toggle('pitch-fullscreen',UI.pitchFullscreen&&S.tab==='fm');
+ var pitchTools=app.querySelector('.pitch-tools');if(pitchTools){var fullscreenButton=document.createElement('button');fullscreenButton.type='button';fullscreenButton.className='pitch-toggle pitch-fullscreen-toggle';fullscreenButton.dataset.act='pitchFullscreen';fullscreenButton.setAttribute('aria-pressed',String(UI.pitchFullscreen));fullscreenButton.setAttribute('aria-label',pitchFullscreenLabel(UI.pitchFullscreen));fullscreenButton.textContent=pitchFullscreenLabel(UI.pitchFullscreen);pitchTools.appendChild(fullscreenButton)}
+ fitTeamName();
  if(teamFitObserver)teamFitObserver.disconnect();
  var teamSwitch=app.querySelector('.team-switch');
  if(teamSwitch&&typeof ResizeObserver!=='undefined'){teamFitObserver=new ResizeObserver(fitTeamName);teamFitObserver.observe(teamSwitch)}
  document.querySelectorAll('.nav button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===S.tab)});localizeUI()}
 
 function changeTab(tab){var tabs=['hs','att','tm','fm','pl','cf'],next=tabs.indexOf(tab);if(next<0)return;
+ if(UI.pitchFullscreen){UI.pitchFullscreen=false;if(document.fullscreenElement)document.exitFullscreen().catch(function(){toast('전체화면을 종료하지 못했어요')})}
  S.tab=tab;UI.pick=null;UI.menu=false;UI.dateMatches=null;UI.calendarOpen=false;UI.matchCalendarOpen=false;UI.statsCalendarField='';save();render();window.scrollTo(0,0)}
+function togglePitchFullscreen(){
+ UI.pitchFullscreen=!UI.pitchFullscreen;render();
+ if(UI.pitchFullscreen&&document.documentElement.requestFullscreen){
+  try{var request=document.documentElement.requestFullscreen();if(request&&request.catch)request.catch(function(){toast('브라우저 전체화면을 시작하지 못해 화면 내 전체화면으로 표시해요')})}
+  catch(err){toast('브라우저 전체화면을 시작하지 못해 화면 내 전체화면으로 표시해요')}
+ }else if(!UI.pitchFullscreen&&document.fullscreenElement){
+  try{var exit=document.exitFullscreen();if(exit&&exit.catch)exit.catch(function(){toast('전체화면을 종료하지 못했어요')})}
+  catch(err){toast('전체화면을 종료하지 못했어요')}
+ }
+}
+document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement&&UI.pitchFullscreen){UI.pitchFullscreen=false;render()}});
 var pitchDrag=null;
 document.addEventListener('pointerdown',function(e){
  var marker=e.target.closest('.pitch .slot,.pitch .pitch-draggable');if(!marker||!e.isPrimary||e.button!==0)return;
@@ -482,6 +497,7 @@ document.addEventListener('click',function(e){
  else if(a==='closePlayerEditor'){UI.playerEditor=null;render();return}
  else if(a==='playerEditorActive'){if(UI.playerEditor){UI.playerEditor.act=t.dataset.v==='on';render()}return}
  else if(a==='savePlayer'){var draft=UI.playerEditor;if(!draft)return;var firstName=(document.getElementById('editorFirstName')||{}).value||'',middleName=(document.getElementById('editorMiddleName')||{}).value||'',lastName=(document.getElementById('editorLastName')||{}).value||'',number=(document.getElementById('editorNo')||{}).value||'',why=(document.getElementById('editorWhy')||{}).value||draft.why,rankFields=document.querySelector('.player-editor .position-ranks');if(!firstName.trim()&&!lastName.trim()){toast('이름을 입력해 주세요.');return}var target=draft.id&&S.members.find(function(m){return m.id===draft.id}),wasActive=target?isAct(target):true,willBeActive=draft.act,applyPlayer=function(){var person=target||{id:uid()};person.firstName=firstName.trim();person.middleName=middleName.trim();person.lastName=lastName.trim();person.name=formatName(person,'');person.no=cno(number);person.act=willBeActive;if(!willBeActive)person.why=why||'부상';else delete person.why;if(rankFields)setPlayerPositions(person,rankFields);if(!target)S.members.push(person);if(wasActive&&!willBeActive){delete S.att[person.id];dropFromLineups(person.id)}UI.playerEditor=null};if(target&&wasActive&&!willBeActive&&S.q.some(function(q){return q.s.indexOf(target.id)>=0||Object.keys(q.sub||{}).some(function(k){return q.sub[k].id===target.id})})){requestConfirm('선수 상태 변경 확인','비활성으로 변경하면 현재 경기 출석과 모든 배치에서 제외돼요. 계속할까요?','변경',applyPlayer);return}applyPlayer()}
+ else if(a==='pitchFullscreen'){togglePitchFullscreen();return}
  else if(a==='toggleOpponent'){S.q[S.cq].opponentOn=!S.q[S.cq].opponentOn}
  else if(a==='toggleBall'){S.q[S.cq].ballOn=!S.q[S.cq].ballOn}
  else if(a==='resetPositions'){var positionQuarter=S.q[S.cq];positionQuarter.coords={};positionQuarter.opponentCoords={};positionQuarter.ballCoord=null;save();render();return}
@@ -546,7 +562,7 @@ document.addEventListener('change',function(e){var t=e.target,c=t.dataset.chg;if
 document.addEventListener('keydown',function(e){var idm=e.target.id;if((idm==='newFirstName'||idm==='newMiddleName'||idm==='newLastName'||idm==='gName'||idm==='gName2')&&e.key==='Enter'){e.preventDefault();var b=document.querySelector('[data-in="'+idm+'"]')||document.querySelector('[data-act="add"]');if(b)b.click()}});
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();UI.ip=e;render()});
 window.addEventListener('appinstalled',function(){UI.ip=null;render()});
-var pitchOrientation=window.matchMedia('(orientation: landscape) and (max-height: 520px) and (max-width: 999px)');
+var pitchOrientation=window.matchMedia('(orientation: landscape) and (max-height: 520px) and (max-width: 999px), (orientation: landscape) and (min-width: 700px)');
 if(pitchOrientation.addEventListener)pitchOrientation.addEventListener('change',function(){if(S.tab==='fm')render()});
 else if(pitchOrientation.addListener)pitchOrientation.addListener(function(){if(S.tab==='fm')render()});
 document.addEventListener('input',function(e){if(e.target.dataset.editorField&&UI.playerEditor){UI.playerEditor[e.target.dataset.editorField]=e.target.value}else if(e.target.id==='impTxt')UI.imp=e.target.value;else if(e.target.id==='matchTime')UI.matchTime=e.target.value;else if(e.target.id==='managedTeamName'){S.team=e.target.value;save();var title=document.querySelector('.team-switch .team');if(title)title.textContent=S.team}});
