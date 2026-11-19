@@ -1,5 +1,5 @@
-// 앱을 수정해서 다시 올릴 때는 아래 버전 숫자를 올려 주세요. (예: captain-v33)
-const V = 'captain-v33';
+// 앱을 수정해서 다시 올릴 때는 아래 버전 숫자를 올려 주세요. (예: captain-v34)
+const V = 'captain-v34';
 const CORE = ['./', 'index.html', 'styles.css', 'calendar.js', 'gestures.js', 'app.js', 'locales/ko.js', 'locales/en.js', 'locales/es.js', 'locales/pt.js', 'locales/de.js', 'locales/fr.js', 'locales/it.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
