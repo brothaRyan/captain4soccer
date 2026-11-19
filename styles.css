@@ -273,7 +273,7 @@ td small{margin-left:4px;font-size:11px;font-weight:400;color:var(--muted)}
  .date-wrap{flex:0 0 min(240px,40%)}
  #app.tab-hs>.list,#app.tab-att>.list,#app.tab-tm>.attendee-card{grid-column:1/-1}
  #app.tab-att>.attendance-summary,#app.tab-tm>.tm-view-tabs,#app>.match-instruction{grid-column:1/-1}
- #app.tab-pl>.player-summary{grid-column:1}
+ #app.tab-pl>.player-summary,#app.tab-pl>.player-grid{grid-column:1/-1}
  #app.tab-pl>.player-summary{display:flex;align-items:center}
  #app.tab-pl>.player-summary .stats{width:100%}
  #app.tab-att>.attendance-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px}
@@ -286,7 +286,8 @@ td small{margin-left:4px;font-size:11px;font-weight:400;color:var(--muted)}
 }
 @media (orientation:landscape) and (max-height:520px) and (max-width:999px){
  .wrap{max-width:none;width:100%;padding:10px calc(14px + env(safe-area-inset-right,0px)) 74px calc(14px + env(safe-area-inset-left,0px))}
- #app{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr);column-gap:12px;align-items:start}
+ #app{display:grid;grid-template-columns:minmax(0,1fr);column-gap:12px;align-items:start}
+ #app.tab-fm{grid-template-columns:minmax(0,3fr) minmax(0,1fr)}
  #app>.page-header,#app>.qt,#app>.sort,#app>.tw{grid-column:1/-1}
  #app.tab-fm>.quarter-nav,#app.tab-fm>.bar{grid-column:1/-1;min-width:0}
  #app.tab-fm>.bar{margin:0 0 4px}
@@ -297,7 +298,7 @@ td small{margin-left:4px;font-size:11px;font-weight:400;color:var(--muted)}
  #app.tab-fm>.quarter-nav .quarter-select{font-size:clamp(10px,2vw,13px)}
  #app.tab-hs>.list,#app.tab-att>.list,#app.tab-tm>.attendee-card{grid-column:1/-1}
  #app.tab-att>.attendance-summary,#app.tab-tm>.tm-view-tabs,#app>.match-instruction{grid-column:1/-1}
- #app.tab-pl>.player-summary{grid-column:1}
+ #app.tab-pl>.player-summary,#app.tab-pl>.player-grid{grid-column:1/-1}
  #app.tab-pl>.player-summary{display:flex;align-items:center}
  #app.tab-pl>.player-summary .stats{width:100%}
  #app.tab-att>.attendance-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px}
