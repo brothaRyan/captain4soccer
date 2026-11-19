@@ -19,9 +19,11 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="wrap"><div id="app"></div></div>
+<div class="wrap"><div class="tab-swipe-viewport"><div class="tab-swipe-track"><div id="app" class="tab-pane"></div></div></div></div>
 <nav class="nav"><button data-tab="hs">경기 목록</button><button data-tab="att">출석</button><button data-tab="tm">출전시간</button><button data-tab="fm">포메이션</button><button data-tab="pl">선수</button><button data-tab="cf">설정</button></nav>
 <div id="toast" role="status"></div>
+<script src="calendar.js" defer></script>
+<script src="gestures.js" defer></script>
 <script src="app.js" defer></script>
 </body>
 </html>

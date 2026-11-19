@@ -185,25 +185,6 @@ function selectMatchDate(d){if(!d)return;
  var matches=S.hist.filter(function(r){return r.date===d});
  if(matches.length>1){UI.dateTarget=d;UI.dateMatches=matches;return}
  if(matches.length&&matches[0].id!==S.matchId)loadRec(matches[0].id);else if(!matches.length&&d!==S.date)startMatch(d)}
-function calendarView(forMatch,forStats){var statsDate=forStats?(UI[UI.statsCalendarField]||today()):'',p=forStats?(UI.statsCalendarMonth||statsDate.slice(0,7)):forMatch?(UI.matchCalendarMonth||UI.matchDate.slice(0,7)):(UI.calendarMonth||S.date.slice(0,7)),parts=p.split('-'),y=+parts[0],m=+parts[1],offset=new Date(y,m-1,1).getDay(),days=new Date(y,m,0).getDate(),available={};
- S.hist.forEach(function(r){available[r.date]=1});
- var current=forStats?statsDate:forMatch?UI.matchDate:S.date,prev=forStats?'statsCalendarPrev':forMatch?'matchCalendarPrev':'calendarPrev',next=forStats?'statsCalendarNext':forMatch?'matchCalendarNext':'calendarNext',pick=forStats?'selectStatsDate':forMatch?'selectMatchDate':'selectCalendarDate',pickerYear=UI.calendarPickerYear||y;
- var weekdays=Array.from({length:7},function(_,i){return new Date(2026,0,4+i).toLocaleDateString(LANGS[LANG].locale,{weekday:'short'})}),monthLabel=new Date(y,m-1,1).toLocaleDateString(LANGS[LANG].locale,{year:'numeric',month:'long'}),months=Array.from({length:12},function(_,i){return new Date(y,i,1).toLocaleDateString(LANGS[LANG].locale,{month:'short'})});
- var h='<div class="calendar-shade"><section class="calendar" role="dialog" aria-modal="true" aria-label="'+(forStats?tr(UI.statsCalendarField==='statsFrom'?'시작일':'종료일'):forMatch?'새 경기 날짜와 시간':tr('경기 날짜 선택'))+'">';
- if(UI.calendarMode==='months')h+='<div class="calendar-head year-head"><button data-act="'+prev+'" aria-label="이전 연도">‹</button><label class="calendar-year"><span>'+tr('연도')+'</span><input type="number" min="1" max="9999" value="'+pickerYear+'" data-chg="calendarPickerYear" aria-label="'+tr('연도')+'"></label><button data-act="'+next+'" aria-label="다음 연도">›</button></div><div class="month-grid">'+months.map(function(name,i){return '<button class="'+(y===pickerYear&&m===i+1?'selected':'')+'" data-act="calendarPickMonth" data-month="'+(i+1)+'">'+name+'</button>'}).join('')+'</div><button class="btn ghost calendar-close" data-act="calendarBack">'+tr('달력으로 돌아가기')+'</button>';
- else{
- h+='<div class="calendar-head"><button data-act="'+prev+'" aria-label="이전 달">‹</button><button class="calendar-title" data-act="calendarTitle" aria-label="'+tr('연도와 월 선택')+'">'+monthLabel+'</button><button data-act="'+next+'" aria-label="다음 달">›</button></div><div class="calendar-grid">'+weekdays.map(function(d){return '<span>'+d+'</span>'}).join('');
- for(var i=0;i<offset;i++)h+='<span></span>';
- for(var d=1;d<=days;d++){var key=y+'-'+pad(m)+'-'+pad(d),enabled=forMatch||forStats||available[key],classes=(available[key]?'has-match ':'')+(key===current?'selected':'');h+='<button'+(enabled?' class="'+classes.trim()+'" data-act="'+pick+'" data-date="'+key+'"':' disabled aria-label="'+d+'일, 경기 기록 없음"')+'>'+d+'</button>'}
- for(var j=offset+days;j<42;j++)h+='<span></span>';
- h+='</div>'}
- if(forMatch)h+='<div class="calendar-time"><label class="lbl" for="matchTime">경기 시간 (선택)</label><input id="matchTime" type="time" class="in" value="'+esc(UI.matchTime||'')+'"></div><button class="btn calendar-create" data-act="createMatch">이 날짜와 시간으로 경기 만들기</button>';
- return h+'<button class="btn ghost calendar-close" data-act="'+(forStats?'closeStatsCalendar':forMatch?'closeMatchCalendar':'closeCalendar')+'">'+tr('닫기')+'</button></section></div>'}
-function shiftCalendarMonth(forMatch,delta,forStats){
- if(UI.calendarMode==='months'){var pickerMonth=forStats?(UI.statsCalendarMonth||((UI[UI.statsCalendarField]||today()).slice(0,7))):forMatch?(UI.matchCalendarMonth||UI.matchDate.slice(0,7)):(UI.calendarMonth||S.date.slice(0,7));UI.calendarPickerYear=Math.max(1,Math.min(9999,(UI.calendarPickerYear||+pickerMonth.slice(0,4))+delta));return}
- var key=forStats?(UI.statsCalendarMonth||((UI[UI.statsCalendarField]||today()).slice(0,7))):forMatch?(UI.matchCalendarMonth||UI.matchDate.slice(0,7)):(UI.calendarMonth||S.date.slice(0,7)),parts=key.split('-'),date=new Date(+parts[0],+parts[1]-1+delta,1),month=date.getFullYear()+'-'+pad(date.getMonth()+1);
- if(forStats)UI.statsCalendarMonth=month;else if(forMatch)UI.matchCalendarMonth=month;else UI.calendarMonth=month
-}
 function dismissed(){if(UI.hd)return true;try{return localStorage.getItem('captain-hint')==='1'}catch(e){return false}}
 function isIos(){return /iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
 function isStandalone(){return navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)}
@@ -334,9 +315,9 @@ function sheet(){
  if(UI.confirm)return confirmSheet();
  if(UI.playerEditor)return playerEditorSheet();
  if(UI.teamEditOpen)return teamEditorSheet();
- if(UI.statsCalendarField)return calendarView(false,true);
- if(UI.matchCalendarOpen)return calendarView(true);
- if(UI.calendarOpen)return calendarView(false);
+ if(UI.statsCalendarField)return CalendarUI.render(false,true);
+ if(UI.matchCalendarOpen)return CalendarUI.render(true);
+ if(UI.calendarOpen)return CalendarUI.render(false);
  if(UI.dateMatches)return '<div class="shade" data-act="closeDateMatches"></div><div class="sheet" role="dialog" aria-label="경기 기록 선택"><h3>'+esc(fmtDate(UI.dateTarget))+' 경기 기록</h3><p class="note">불러올 기록을 선택해 주세요.</p>'+UI.dateMatches.map(function(r,i){return '<button class="pick" data-act="chooseDateMatch" data-id="'+r.id+'"><span>'+esc(fmtDate(r.date))+' 경기 '+(i+1)+'</span><em>'+(r.opp?'vs '+esc(r.opp)+' · ':'')+scTxt(r)+'</em></button>'}).join('')+'<button class="btn ghost" data-act="closeDateMatches">취소</button></div>';
  if(UI.pick==null)return '';
  var q=S.q[S.cq],defs=slotDefs(q.f),at=attendees().concat(S.guests);
@@ -350,20 +331,24 @@ function sheet(){
  if(q.s[UI.pick])h+='<button class="btn ghost" data-act="clear">이 자리 비우기</button>';
  return h+'<button class="btn ghost" data-act="close">닫기</button></div>'}
 
-function render(){fixQ();indexPeople();
- S.members.forEach(function(m){if(isAct(m)&&(!S.att[m.id]||S.att[m.id]==='m'))S.att[m.id]='n'});
+function tabMarkup(tab){
  var h='<div class="page-header"><div class="head"><div class="team-switch" aria-label="현재 팀 '+esc(S.team)+'"><span class="crest">'+(S.teamImage?'<img src="'+esc(S.teamImage)+'" alt="팀 앰블럼">':'앰블럼 없음')+'</span><span class="team">'+esc(S.team)+'</span></div></div>';
- if(S.tab==='hs')h+='<div class="date-wrap"><button class="date-button header-add-match" data-act="menu" aria-expanded="'+(UI.matchCalendarOpen?'true':'false')+'">＋ 경기 추가</button></div>';
- else if(S.tab==='pl')h+='<div class="date-wrap"><button class="date-button header-add-player" data-act="newPlayer">＋ '+tr('선수 추가')+'</button></div>';
- else if(S.tab!=='cf'&&S.tab!=='pl')h+='<div class="date-wrap"><button class="date-button" data-act="openCalendar" aria-expanded="'+(UI.calendarOpen?'true':'false')+'" aria-label="경기 날짜 선택">'+esc(fmtDate(S.date))+' 경기</button></div>';
- else if(S.tab==='cf')h+='<div class="date-wrap"><button class="date-button header-edit-team" data-act="editTeam">'+tr('팀 수정')+'</button></div>';
- else if(S.tab!=='pl')h+='<div class="date-wrap header-placeholder" aria-hidden="true"></div>';
+ if(tab==='hs')h+='<div class="date-wrap"><button class="date-button header-add-match" data-act="menu" aria-expanded="'+(UI.matchCalendarOpen?'true':'false')+'">＋ 경기 추가</button></div>';
+ else if(tab==='pl')h+='<div class="date-wrap"><button class="date-button header-add-player" data-act="newPlayer">＋ '+tr('선수 추가')+'</button></div>';
+ else if(tab!=='cf')h+='<div class="date-wrap"><button class="date-button" data-act="openCalendar" aria-expanded="'+(UI.calendarOpen?'true':'false')+'" aria-label="경기 날짜 선택">'+esc(fmtDate(S.date))+' 경기</button></div>';
+ else h+='<div class="date-wrap"><button class="date-button header-edit-team" data-act="editTeam">'+tr('팀 수정')+'</button></div>';
  h+='</div>';
  var banner=installBanner();
- if(S.tab==='cf')h+=viewSt()+banner;
- else h+=banner+(S.tab==='att'?viewAtt():S.tab==='fm'?viewFm():S.tab==='hs'?viewHs():S.tab==='pl'?viewPl():viewTm());
- var app=document.getElementById('app');app.className='tab-'+S.tab;app.innerHTML=h+sheet();document.body.classList.toggle('pitch-fullscreen',UI.pitchFullscreen&&S.tab==='fm');
- var pitchTools=app.querySelector('.pitch-tools');if(pitchTools){var fullscreenButton=document.createElement('button');fullscreenButton.type='button';fullscreenButton.className='pitch-toggle pitch-fullscreen-toggle';fullscreenButton.dataset.act='pitchFullscreen';fullscreenButton.setAttribute('aria-pressed',String(UI.pitchFullscreen));fullscreenButton.setAttribute('aria-label',pitchFullscreenLabel(UI.pitchFullscreen));fullscreenButton.textContent=pitchFullscreenLabel(UI.pitchFullscreen);pitchTools.appendChild(fullscreenButton)}
+ if(tab==='cf')h+=viewSt()+banner;
+ else h+=banner+(tab==='att'?viewAtt():tab==='fm'?viewFm():tab==='hs'?viewHs():tab==='pl'?viewPl():viewTm());
+ return h
+}
+function addPitchFullscreenButton(app){var pitchTools=app.querySelector('.pitch-tools');if(!pitchTools)return;
+ var fullscreenButton=document.createElement('button');fullscreenButton.type='button';fullscreenButton.className='pitch-toggle pitch-fullscreen-toggle';fullscreenButton.dataset.act='pitchFullscreen';fullscreenButton.setAttribute('aria-pressed',String(UI.pitchFullscreen));fullscreenButton.setAttribute('aria-label',pitchFullscreenLabel(UI.pitchFullscreen));fullscreenButton.textContent=pitchFullscreenLabel(UI.pitchFullscreen);pitchTools.appendChild(fullscreenButton)}
+function render(){fixQ();indexPeople();
+ S.members.forEach(function(m){if(isAct(m)&&(!S.att[m.id]||S.att[m.id]==='m'))S.att[m.id]='n'});
+ var app=document.getElementById('app');app.className='tab-pane tab-'+S.tab;app.innerHTML=tabMarkup(S.tab)+sheet();document.body.classList.toggle('pitch-fullscreen',UI.pitchFullscreen&&S.tab==='fm');
+ addPitchFullscreenButton(app);
  fitTeamName();
  if(teamFitObserver)teamFitObserver.disconnect();
  var teamSwitch=app.querySelector('.team-switch');
@@ -407,25 +392,6 @@ document.addEventListener('pointerup',function(e){
 document.addEventListener('pointercancel',function(e){
  if(pitchDrag&&pitchDrag.pointerId===e.pointerId){var moved=pitchDrag.moved;pitchDrag=null;if(moved)render()}
 });
-var touchGesture=null;
-document.addEventListener('touchstart',function(e){
- if(e.touches.length!==1)return;
- var target=e.target,calendar=target.closest('.calendar'),seg=target.closest('.attendance-roster .seg'),button=target.closest('button[data-act="att"]');
- if(calendar){touchGesture={type:'calendar',forMatch:UI.matchCalendarOpen,x:e.touches[0].clientX,y:e.touches[0].clientY};return}
- if(seg&&button){var row=seg.closest('.row');if(row){touchGesture={type:'attendance',id:button.dataset.id,x:e.touches[0].clientX,y:e.touches[0].clientY};return}}
- if(target.closest('button,input,select,textarea,a,.pitch,.sheet,.calendar,.nav,.tw,.seg'))return;
- if(target.closest('#app'))touchGesture={type:'tab',x:e.touches[0].clientX,y:e.touches[0].clientY}
-},{passive:true});
-document.addEventListener('touchend',function(e){
- if(!touchGesture||!e.changedTouches.length)return;
- var g=touchGesture;touchGesture=null;var dx=e.changedTouches[0].clientX-g.x,dy=e.changedTouches[0].clientY-g.y;
- if(Math.abs(dx)<(g.type==='attendance'?24:60)||Math.abs(dx)<Math.abs(dy)*1.3)return;
- if(g.type==='attendance'){var status=dx<0?'n':'y';if(S.att[g.id]===status)return;e.preventDefault();S.att[g.id]=status;if(status!=='y')dropFromLineups(g.id);save();render();return}
- if(g.type==='calendar'){e.preventDefault();shiftCalendarMonth(g.forMatch,dx<0?1:-1);render();return}
- var tabs=['hs','att','tm','fm','pl','cf'],i=tabs.indexOf(S.tab),next=i+(dx<0?1:-1);if(next>=0&&next<tabs.length){e.preventDefault();changeTab(tabs[next])}
-},{passive:false});
-document.addEventListener('touchcancel',function(){touchGesture=null},{passive:true});
-
 function fitTeamName(){
  var el=document.querySelector('.team-switch .team');if(!el)return;
  el.style.fontSize='';
@@ -479,9 +445,9 @@ document.addEventListener('click',function(e){
  else if(a==='calendarTitle'){var cm=UI.statsCalendarField?UI.statsCalendarMonth||((UI[UI.statsCalendarField]||today()).slice(0,7)):UI.matchCalendarOpen?UI.matchCalendarMonth:UI.calendarMonth;UI.calendarPickerYear=+(cm||today().slice(0,7)).slice(0,4);UI.calendarMode='months';render();return}
  else if(a==='calendarBack'){UI.calendarMode='days';render();return}
  else if(a==='calendarPickMonth'){var selectedYear=UI.calendarPickerYear||new Date().getFullYear(),selectedMonth=pad(+t.dataset.month);if(UI.statsCalendarField)UI.statsCalendarMonth=selectedYear+'-'+selectedMonth;else if(UI.matchCalendarOpen)UI.matchCalendarMonth=selectedYear+'-'+selectedMonth;else UI.calendarMonth=selectedYear+'-'+selectedMonth;UI.calendarMode='days';render();return}
- else if(a==='calendarPrev'||a==='calendarNext'){shiftCalendarMonth(false,a==='calendarPrev'?-1:1);render();return}
- else if(a==='matchCalendarPrev'||a==='matchCalendarNext'){shiftCalendarMonth(true,a==='matchCalendarPrev'?-1:1);render();return}
- else if(a==='statsCalendarPrev'||a==='statsCalendarNext'){shiftCalendarMonth(false,a==='statsCalendarPrev'?-1:1,true);render();return}
+ else if(a==='calendarPrev'||a==='calendarNext'){CalendarUI.shiftMonth(false,a==='calendarPrev'?-1:1);render();return}
+ else if(a==='matchCalendarPrev'||a==='matchCalendarNext'){CalendarUI.shiftMonth(true,a==='matchCalendarPrev'?-1:1);render();return}
+ else if(a==='statsCalendarPrev'||a==='statsCalendarNext'){CalendarUI.shiftMonth(false,a==='statsCalendarPrev'?-1:1,true);render();return}
  else if(a==='selectCalendarDate'){UI.calendarOpen=false;UI.calendarMonth='';selectMatchDate(t.dataset.date);if(!UI.dateMatches)toast('경기 기록을 불러왔어요')}
  else if(a==='selectMatchDate'){UI.matchDate=t.dataset.date}
  else if(a==='selectStatsDate'){if(UI.statsCalendarField)UI[UI.statsCalendarField]=t.dataset.date;UI.statsCalendarField='';UI.statsCalendarMonth=''}
@@ -567,6 +533,7 @@ if(pitchOrientation.addEventListener)pitchOrientation.addEventListener('change',
 else if(pitchOrientation.addListener)pitchOrientation.addListener(function(){if(S.tab==='fm')render()});
 document.addEventListener('input',function(e){if(e.target.dataset.editorField&&UI.playerEditor){UI.playerEditor[e.target.dataset.editorField]=e.target.value}else if(e.target.id==='impTxt')UI.imp=e.target.value;else if(e.target.id==='matchTime')UI.matchTime=e.target.value;else if(e.target.id==='managedTeamName'){S.team=e.target.value;save();var title=document.querySelector('.team-switch .team');if(title)title.textContent=S.team}});
 document.addEventListener('toggle',function(e){if(e.target.matches&&e.target.matches('details[data-mg]'))UI.mg=e.target.open},true);
+GestureUI.init();
 loadLocale(LANG).then(render).catch(function(){LANG='ko';loadLocale('ko').then(render).catch(function(){render()});toast('언어 파일을 불러오지 못했어요')});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTeamName);
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
