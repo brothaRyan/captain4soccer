@@ -40,13 +40,14 @@ window.CalendarUI = (function () {
     var months = Array.from({ length: 12 }, function (_, index) {
       return new Date(year, index, 1).toLocaleDateString(LANGS[LANG].locale, { month: 'short' });
     });
-    var html = panelOnly ? '' : '<div class="calendar-shade"><div class="calendar-swipe-viewport"><div class="calendar-swipe-track">';
-
-    html += '<section class="calendar" role="dialog" aria-modal="true" aria-label="' +
+    var closeAction = forStats ? 'closeStatsCalendar' : forMatch ? 'closeMatchCalendar' : 'closeCalendar';
+    var html = panelOnly ? '' : '<div class="calendar-shade"><section class="calendar" role="dialog" ' +
+      'aria-modal="true" aria-label="' +
       (forStats ? tr(UI.statsCalendarField === 'statsFrom' ? '시작일' : '종료일') :
         forMatch ? tr('새 경기 날짜와 시간') : tr('경기 날짜 선택')) + '">';
 
     if (UI.calendarMode === 'months') {
+      if (panelOnly) return '';
       html += '<div class="calendar-head year-head"><button data-act="' + previousAction +
         '" aria-label="이전 연도">‹</button><label class="calendar-year"><span>' + tr('연도') +
         '</span><input type="number" min="1" max="9999" value="' + pickerYear +
@@ -58,10 +59,14 @@ window.CalendarUI = (function () {
         }).join('') + '</div><button class="btn ghost calendar-close" data-act="calendarBack">' +
         tr('달력으로 돌아가기') + '</button>';
     } else {
-      html += '<div class="calendar-head"><button data-act="' + previousAction +
-        '" aria-label="이전 달">‹</button><button class="calendar-title" data-act="calendarTitle" aria-label="' +
-        tr('연도와 월 선택') + '">' + monthLabel + '</button><button data-act="' + nextAction +
-        '" aria-label="다음 달">›</button></div><div class="calendar-grid">' +
+      if (!panelOnly) {
+        html += '<div class="calendar-head"><button data-act="' + previousAction +
+          '" aria-label="이전 달">‹</button><button class="calendar-title" data-act="calendarTitle" aria-label="' +
+          tr('연도와 월 선택') + '">' + monthLabel + '</button><button data-act="' + nextAction +
+          '" aria-label="다음 달">›</button></div><div class="calendar-month-viewport"><div class="calendar-month-track">';
+      }
+
+      html += '<div class="calendar-month"><div class="calendar-grid">' +
         weekdays.map(function (day) { return '<span>' + day + '</span>'; }).join('');
 
       for (var index = 0; index < offset; index++) html += '<span></span>';
@@ -74,8 +79,11 @@ window.CalendarUI = (function () {
           ' disabled aria-label="' + dayNumber + '일, 경기 기록 없음"') + '>' + dayNumber + '</button>';
       }
       for (var cell = offset + days; cell < 42; cell++) html += '<span></span>';
-      html += '</div>';
+      html += '</div></div>';
+      if (!panelOnly) html += '</div></div>';
     }
+
+    if (panelOnly) return html;
 
     if (forMatch) {
       html += '<div class="calendar-time"><label class="lbl" for="matchTime">경기 시간 (선택)</label>' +
@@ -83,9 +91,8 @@ window.CalendarUI = (function () {
         '"></div><button class="btn calendar-create" data-act="createMatch">이 날짜와 시간으로 경기 만들기</button>';
     }
 
-    var closeAction = forStats ? 'closeStatsCalendar' : forMatch ? 'closeMatchCalendar' : 'closeCalendar';
     return html + '<button class="btn ghost calendar-close" data-act="' + closeAction + '">' +
-      tr('닫기') + '</button></section>' + (panelOnly ? '' : '</div></div></div>');
+      tr('닫기') + '</button></section></div>';
   }
 
   function shiftMonth(forMatch, delta, forStats) {
@@ -103,11 +110,11 @@ window.CalendarUI = (function () {
   }
 
   function startSwipe(gesture, dx) {
-    var viewport = document.querySelector('.calendar-swipe-viewport');
-    var track = document.querySelector('.calendar-swipe-track');
+    var viewport = document.querySelector('.calendar-month-viewport');
+    var track = document.querySelector('.calendar-month-track');
     var direction = dx < 0 ? 1 : -1;
     if (UI.calendarMode === 'months' || !viewport || !track ||
-        !track.querySelector('.calendar') || track.children.length !== 1 || !viewport.clientWidth) return false;
+        !track.querySelector('.calendar-month') || track.children.length !== 1 || !viewport.clientWidth) return false;
 
     var previewMonth = shiftedMonth(monthKey(gesture.forMatch, gesture.forStats), direction);
     var holder = document.createElement('div');
