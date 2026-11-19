@@ -82,13 +82,12 @@ window.GestureUI = (function () {
     if (e.touches.length !== 1 || UI.pitchFullscreen) return;
 
     var target = e.target;
-    var calendar = target.closest('.calendar');
+    var calendar = target.closest('.calendar-grid');
     var segment = target.closest('.attendance-roster .seg');
     var attendanceButton = target.closest('button[data-act="att"]');
     var touch = e.touches[0];
 
     if (calendar) {
-      if (target.closest('input,select,textarea')) return;
       touchGesture = {
         type: 'calendar',
         forMatch: UI.matchCalendarOpen,
