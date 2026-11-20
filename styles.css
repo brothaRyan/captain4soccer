@@ -157,10 +157,15 @@ td.z{color:var(--no)}
 .shade{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20}
 .sheet{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;max-height:78vh;overflow:auto;background:var(--surface);border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));z-index:21}
 .sheet h3{margin:0 0 8px;font:400 20px var(--hd)}
+.sheet-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+.sheet-header h3{min-width:0;margin:0}
+.sheet-delete{flex:0 0 auto;min-height:30px;padding:0 10px;border:0;border-radius:8px;background:var(--no);color:#fff;font-size:12px;font-weight:700}
 .sheet.confirm-sheet{padding-top:20px}
 .confirm-sheet .note{margin:0 0 14px}
 .confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .confirm-actions .btn{margin:0}
+.match-editor .in{margin-bottom:10px}
+.match-editor .confirm-actions{margin-top:4px}
 .btn.warn{background:var(--no);color:#fff}
 .pick{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:46px;padding:8px 4px;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;font-weight:700}
 .pick em{font-style:normal;font-weight:400;font-size:12px;color:var(--muted)}
