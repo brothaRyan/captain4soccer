@@ -396,8 +396,8 @@ body.pitch-fullscreen #app.tab-fm .pitch-panel .pitch{grid-column:1;grid-row:2;a
 @media (min-width:1000px) and (orientation:landscape){
  body{display:grid;grid-template-columns:200px minmax(0,1fr);align-items:start;min-height:100vh}
  .wrap{grid-column:2;grid-row:1;width:100%;max-width:none;min-width:0;margin:0;padding:28px clamp(24px,4vw,64px) 40px}
- #app{max-width:1600px;margin:0 auto}
- .nav{position:sticky;grid-column:1;grid-row:1;top:0;left:auto;right:auto;bottom:auto;width:200px;height:100vh;height:100dvh;flex-direction:column;justify-content:flex-start;gap:8px;padding:20px 12px;border-top:0;border-right:1px solid var(--line)}
+ #app{max-width:1600px;margin:0}
+ .nav{position:fixed;grid-column:1;grid-row:1;top:0;left:0;right:auto;bottom:auto;width:200px;height:100vh;height:100dvh;flex-direction:column;justify-content:flex-start;gap:8px;padding:20px 12px;border-top:0;border-right:1px solid var(--line)}
  .nav button{flex:0 0 48px;width:100%;padding:0 14px;text-align:left;font-size:15px}
  #app .date-wrap .date-button{min-height:44px;font-size:16px}
  .sheet{left:200px;right:0}

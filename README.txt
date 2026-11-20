@@ -9,7 +9,7 @@
 - 아이폰 Safari: 주소를 열고 공유 버튼 > 홈 화면에 추가
 
 [수정해서 다시 올릴 때]
-sw.js 맨 위의 버전 숫자(captain-v37)를 올려서(captain-v38 ...) 올려야 팀원 폰에 새 버전이 반영돼요.
+sw.js 맨 위의 버전 숫자(captain-v39)를 올려서(captain-v40 ...) 올려야 팀원 폰에 새 버전이 반영돼요.
 화면 구조는 index.html, 스타일은 styles.css, 앱 동작은 app.js에서 수정하면 돼요.
 달력 표시와 월 드래그 동작은 calendar.js에서 관리해요.
 화면 탭·달력·출석 스와이프 제스처는 gestures.js에서 관리해요.
