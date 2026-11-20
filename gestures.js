@@ -82,6 +82,7 @@ window.GestureUI = (function () {
     if (e.touches.length !== 1 || UI.pitchFullscreen) return;
 
     var target = e.target;
+    if (window.matchMedia('(min-width:1000px) and (orientation:landscape)').matches) return;
     var calendar = target.closest('.calendar-month-viewport');
     var segment = target.closest('.attendance-roster .seg');
     var attendanceButton = target.closest('button[data-act="att"]');

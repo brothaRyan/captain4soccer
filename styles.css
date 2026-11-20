@@ -355,6 +355,7 @@ td small{margin-left:4px;font-size:11px;font-weight:400;color:var(--muted)}
  .pitch .bx.b{left:auto;right:0;top:22%;bottom:22%;border:2px solid var(--pl);border-right:0}
 }
 @media (orientation:landscape){
+ #app.tab-pl>.empty{grid-column:1/-1}
  #app.tab-fm>.pitch-layout{grid-template-columns:minmax(0,3fr) minmax(0,1fr);column-gap:12px}
  #app.tab-fm .pitch-main,#app.tab-fm .pitch-panel{display:contents}
  #app.tab-fm .pitch-controls{grid-column:1;grid-row:1;min-width:0}
@@ -390,6 +391,11 @@ body.pitch-fullscreen #app.tab-fm .pitch-hint{flex:0 0 100%;width:100%;min-width
 body.pitch-fullscreen #app.tab-fm .pitch-hint>.note{display:block;flex:1;min-width:0;margin:0}
 body.pitch-fullscreen #app.tab-fm .pitch-hint .pitch-tools{margin-left:auto}
 body.pitch-fullscreen #app.tab-fm .pitch-panel .pitch{grid-column:1;grid-row:2;align-self:center;justify-self:center;width:min(100%,calc((100dvh - 100px)*5/6));height:auto;max-height:100%;aspect-ratio:5/6;margin:0}
+body.pitch-fullscreen #app.tab-fm .pitch-panel .chip{max-width:calc(var(--chip-column,25cqw)*1.2 - 2.2cqw);padding:1.2cqw 1.2cqw .8cqw;border-radius:1.7cqw;border-bottom-width:.5cqw;font-size:max(11px,2.6cqw)}
+body.pitch-fullscreen #app.tab-fm .pitch-panel .chip.e{padding:1.1cqw}
+body.pitch-fullscreen #app.tab-fm .pitch-panel .sbc{max-width:15.6cqw;margin-top:.56cqw;padding:.56cqw 1.12cqw;border-radius:1.68cqw;font-size:max(10px,2.8cqw)}
+body.pitch-fullscreen #app.tab-fm .pitch-panel .opponent-token{width:6.42cqw;height:6.42cqw;border-width:.84cqw}
+body.pitch-fullscreen #app.tab-fm .pitch-panel .ball-marker{width:6.42cqw;height:6.42cqw}
 @media (orientation:landscape){
  body.pitch-fullscreen #app.tab-fm .pitch-panel .pitch{width:min(100%,calc((100dvh - 100px)*1.5));aspect-ratio:3/2}
 }
