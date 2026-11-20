@@ -64,8 +64,20 @@ button{cursor:pointer}
 .calendar-grid button{min-height:40px;border:0;border-radius:10px;background:var(--bg);color:var(--ink)}
 .calendar-time{display:flex;flex-direction:column;min-width:0;max-width:100%;margin-top:12px;overflow:hidden}
 .calendar-time .lbl{margin-bottom:4px}
-.calendar-time input[type="time"]{display:block;flex:0 1 100%;width:100%;min-width:0;max-width:100%;box-sizing:border-box;font-size:16px}
+.picker-button{display:flex;align-items:center;justify-content:center;text-align:center;font-size:17px}
 .calendar-create{margin:12px 0 0}
+.time-picker-sheet{position:fixed;left:50%;top:50%;display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(360px,calc(100vw - 32px));padding:20px 20px calc(16px + env(safe-area-inset-bottom,0px));transform:translate(-50%,-50%);border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 12px 32px rgba(0,0,0,.28);z-index:21}
+.time-picker-sheet h3,.time-picker-actions{grid-column:1/-1}
+.time-picker-sheet h3{margin:0;font:400 20px var(--hd);text-align:center}
+.time-wheel-column{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.time-wheel{position:relative;height:200px;overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain;scroll-snap-type:y mandatory;touch-action:pan-y}
+.time-wheel::-webkit-scrollbar{display:none}
+.time-wheel::after{position:absolute;top:80px;right:0;left:0;height:40px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(127,127,127,.08);content:"";pointer-events:none}
+.time-wheel-list{padding:80px 0}
+.time-wheel-item{display:grid;place-items:center;height:40px;scroll-snap-align:center;color:var(--muted);font-size:22px;font-variant-numeric:tabular-nums}
+.time-wheel-item[aria-selected="true"]{color:var(--ink);font-weight:700}
+.time-picker-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.time-picker-actions .btn{margin:0}
 .calendar-grid button:disabled{background:transparent;color:var(--line);cursor:default}
 .calendar-grid button.has-match{background:var(--turf);color:var(--on);font-weight:700}
 .calendar-grid button.selected{box-shadow:0 0 0 3px var(--accent)}

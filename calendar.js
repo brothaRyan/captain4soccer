@@ -86,9 +86,10 @@ window.CalendarUI = (function () {
     if (panelOnly) return html;
 
     if (forMatch) {
-      html += '<div class="calendar-time"><label class="lbl" for="matchTime">경기 시간 (선택)</label>' +
-        '<input id="matchTime" type="time" class="in" value="' + esc(UI.matchTime || '') +
-        '"></div><button class="btn calendar-create" data-act="createMatch">이 날짜와 시간으로 경기 만들기</button>';
+      html += '<div class="calendar-time"><label class="lbl">경기 시간 (선택)</label>' +
+        '<button class="in picker-button" data-act="openTimePicker" data-target="create">' +
+        (UI.matchTime ? esc(UI.matchTime) : tr('시간 선택 안 함')) +
+        '</button></div><button class="btn calendar-create" data-act="createMatch">이 날짜와 시간으로 경기 만들기</button>';
     }
 
     return html + '<button class="btn ghost calendar-close" data-act="' + closeAction + '">' +
